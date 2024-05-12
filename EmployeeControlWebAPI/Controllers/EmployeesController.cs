@@ -23,12 +23,22 @@ namespace EmployeeControlWebAPI.Controllers
 
         // GET: api/Employees
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employees>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<Employees>>> GetEmployees(string optionalPosition = null)
         {
-          if (_context.Employees == null)
-          {
-              return NotFound();
-          }
+            if (_context.Employees == null)
+            {
+                return NotFound();
+            }
+            if (optionalPosition != null)
+            {
+                var positionEmployees = await _context.Employees.FirstOrDefaultAsync(x => x.Position == optionalPosition);
+                if (positionEmployees == null)
+                {
+                    return NotFound("Должность не найдена.");
+                }
+                return await _context.Employees.Where(e => e.Position == optionalPosition).Include(e => e.Shifts).ToListAsync();
+            }
+
             return await _context.Employees.Include(e => e.Shifts).ToListAsync();
         }
 
@@ -56,12 +66,28 @@ namespace EmployeeControlWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployees(int id, Employees employees)
         {
-            if (id != employees.EmployeesId)
+            var findEmploeerId = await _context.Employees.FindAsync(id);
+            if (findEmploeerId ==  null)
             {
-                return BadRequest();
+                return BadRequest("1");
             }
 
-            _context.Entry(employees).State = EntityState.Modified;
+            findEmploeerId.Surname = employees.Surname;
+            findEmploeerId.Name = employees.Name;
+            findEmploeerId.Patronymic = employees.Patronymic;
+            findEmploeerId.Position = employees.Position;
+
+            var findShiftsId = await _context.Shifts.FirstOrDefaultAsync(e => e.EmployeesId == id);
+            if (findShiftsId == null)
+            {
+                return BadRequest("5");
+            }
+            _context.Shifts.Remove(findShiftsId);
+            foreach (var shifts in employees.Shifts)
+            {
+                findEmploeerId.Shifts.Add(shifts);
+            }
+
 
             try
             {
@@ -71,7 +97,7 @@ namespace EmployeeControlWebAPI.Controllers
             {
                 if (!EmployeesExists(id))
                 {
-                    return NotFound();
+                    return NotFound("2");
                 }
                 else
                 {
@@ -91,6 +117,7 @@ namespace EmployeeControlWebAPI.Controllers
           {
               return Problem("Entity set 'EmployeeControlWebAPIContext.Employees'  is null.");
           }
+
             _context.Employees.Add(employees);
             await _context.SaveChangesAsync();
 

@@ -3,6 +3,7 @@ using System;
 using EmployeeControlWebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeControlWebAPI.Migrations
 {
     [DbContext(typeof(EmployeeControlWebAPIContext))]
-    partial class EmployeeControlWebAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20240508131753_updateMigration")]
+    partial class updateMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,7 +46,7 @@ namespace EmployeeControlWebAPI.Migrations
 
                     b.HasKey("EmployeesId");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("EmployeeControlWebAPI.Model.Shifts", b =>
@@ -55,20 +58,20 @@ namespace EmployeeControlWebAPI.Migrations
                     b.Property<int>("EmployeesId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("EndTime")
+                    b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int?>("QuantityHoursWorked")
+                    b.Property<int>("QuantityHoursWorked")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("StartTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("ShiftsId");
 
                     b.HasIndex("EmployeesId");
 
-                    b.ToTable("Shifts", (string)null);
+                    b.ToTable("Shifts");
                 });
 
             modelBuilder.Entity("EmployeeControlWebAPI.Model.Shifts", b =>

@@ -34,13 +34,13 @@ namespace EmployeeControlWebAPI.Controllers
 
         // GET: api/Shifts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Shifts>> GetShifts(int id)
+        public async Task<ActionResult<List<Shifts>>> GetShifts(int id)
         {
           if (_context.Shifts == null)
           {
               return NotFound();
           }
-            var shifts = await _context.Shifts.FindAsync(id);
+            var shifts = await _context.Shifts.Where(e => e.EmployeesId == id).ToListAsync();
 
             if (shifts == null)
             {
@@ -50,67 +50,74 @@ namespace EmployeeControlWebAPI.Controllers
             return shifts;
         }
 
-        // PUT: api/Shifts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutShifts(int id, Shifts shifts)
+        [HttpPost("StartTime")]
+        public async Task<ActionResult<Shifts>> PostStartShifts(int id, DateTime startTimeJob)
         {
-            if (id != shifts.ShiftsId)
+            var employees = await _context.Employees.FindAsync(id);
+            if (employees == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(shifts).State = EntityState.Modified;
-
-            try
+            var shiftCheck = await _context.Shifts.FirstOrDefaultAsync(e => e.EmployeesId == id && e.StartTime == null);
+            if (shiftCheck == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ShiftsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound("Сотрудник уже на смене.");
             }
 
-            return NoContent();
+
+            shiftCheck.StartTime = startTimeJob;
+            await _context.SaveChangesAsync();
+            return Ok();
+
         }
 
-        // POST: api/Shifts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Shifts>> PostShifts(Shifts shifts)
+        [HttpPost("EndShifts")]
+        public async Task<ActionResult<Shifts>> PostEndShifts(int id, DateTime endTimeJob)
         {
-          if (_context.Shifts == null)
-          {
-              return Problem("Entity set 'EmployeeControlWebAPIContext.Shifts'  is null.");
-          }
-            _context.Shifts.Add(shifts);
-            await _context.SaveChangesAsync();
+            var employees = await _context.Employees.FindAsync(id);
+            if (employees == null)
+            {
+                return NotFound();
+            }
 
-            return CreatedAtAction("GetShifts", new { id = shifts.ShiftsId }, shifts);
+            var shiftCheck = await _context.Shifts.FirstOrDefaultAsync(e => e.EmployeesId == id && e.EndTime == null);
+            if (shiftCheck == null)
+            {
+                return NotFound("Смена уже закончена.");
+            }
+            if(shiftCheck.StartTime >= endTimeJob)
+            {
+                return BadRequest("Ошибка времени смены!");
+            }
+            if(shiftCheck.StartTime == null)
+            {
+                return BadRequest("Смена еще не начилась.");
+            }
+
+            shiftCheck.EndTime = endTimeJob;
+            var timeJob = endTimeJob - shiftCheck.StartTime;
+            shiftCheck.QuantityHoursWorked = (int)timeJob.Value.TotalHours;
+            await _context.SaveChangesAsync();
+            return Ok();
+
         }
 
         // DELETE: api/Shifts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShifts(int id)
         {
-            if (_context.Shifts == null)
-            {
-                return NotFound();
-            }
-            var shifts = await _context.Shifts.FindAsync(id);
-            if (shifts == null)
+
+            var employees = await _context.Shifts.FirstOrDefaultAsync(e => e.EmployeesId == id);
+            if (employees == null)
             {
                 return NotFound();
             }
 
-            _context.Shifts.Remove(shifts);
+            employees.StartTime = null;
+            employees.EndTime = null;
+            employees.QuantityHoursWorked = 0;
+
             await _context.SaveChangesAsync();
 
             return NoContent();
