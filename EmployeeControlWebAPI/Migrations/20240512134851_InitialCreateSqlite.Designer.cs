@@ -11,38 +11,36 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeControlWebAPI.Migrations
 {
     [DbContext(typeof(EmployeeControlWebAPIContext))]
-    [Migration("20240508131753_updateMigration")]
-    partial class updateMigration
+    [Migration("20240512134851_InitialCreateSqlite")]
+    partial class InitialCreateSqlite
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.18")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.18");
 
             modelBuilder.Entity("EmployeeControlWebAPI.Model.Employees", b =>
                 {
                     b.Property<int>("EmployeesId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Patronymic")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Position")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("EmployeesId");
 
@@ -53,19 +51,19 @@ namespace EmployeeControlWebAPI.Migrations
                 {
                     b.Property<int>("ShiftsId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("EmployeesId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("QuantityHoursWorked")
-                        .HasColumnType("int");
+                    b.Property<int?>("QuantityHoursWorked")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ShiftsId");
 
